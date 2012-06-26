@@ -12,4 +12,12 @@ describe Game do
     end
   end
   
+  describe "#new_hearts" do
+    it "should show that the game type is hearts" do
+      @hearts = Game.new :hearts
+      @hearts.type.should eql :hearts
+    end
+  end
+  
+  
 end
