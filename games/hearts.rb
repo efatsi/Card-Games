@@ -1,20 +1,4 @@
-require './deck.rb'
-require './player.rb'
-
-class Game
-  
-  attr_accessor :size, :players, :winner
-  
-  def game_over?
-    !@winner.nil?
-  end
-  
-  def reset
-    @winner = nil
-    @players = []
-  end 
-end
-
+require '../game.rb'
 
 class Hearts < Game
   
@@ -22,11 +6,12 @@ class Hearts < Game
     @players = []
     @winner = nil
     @size = 4
+    set_player_number
   end
   
   def load_players
     @size.times do
-      @players << Player.new
+      @players << Players.new
     end
   end
   
@@ -39,4 +24,3 @@ class Hearts < Game
   end
   
 end
-
