@@ -4,7 +4,7 @@ describe Hearts do
 
   before :all do
     @hearts = Hearts.new
-    @deck = @hearts.load_deck
+    @hearts.load_deck
     @hearts.load_players
   end
 
@@ -16,23 +16,23 @@ describe Hearts do
 
   describe "#get_deck" do
     it "should return a new array" do
-      @deck.should be_an_instance_of Array
+      @hearts.deck.should be_an_instance_of Array
     end
     it "should show that deck has 52 cards" do
-      @deck.length.should == 52
+      @hearts.deck.length.should == 52
     end
     it "should show deck has all the cards" do
       (2..10).each do |i|
-        @deck.include?("#{i}C").should == true
-        @deck.include?("#{i}H").should == true      
-        @deck.include?("#{i}S").should == true
-        @deck.include?("#{i}D").should == true
+        @hearts.deck.include?("#{i}C").should == true
+        @hearts.deck.include?("#{i}H").should == true      
+        @hearts.deck.include?("#{i}S").should == true
+        @hearts.deck.include?("#{i}D").should == true
       end
       ["J","Q","K","A"].each do |f|
-        @deck.include?("#{f}C").should == true
-        @deck.include?("#{f}H").should == true      
-        @deck.include?("#{f}S").should == true
-        @deck.include?("#{f}D").should == true
+        @hearts.deck.include?("#{f}C").should == true
+        @hearts.deck.include?("#{f}H").should == true      
+        @hearts.deck.include?("#{f}S").should == true
+        @hearts.deck.include?("#{f}D").should == true
       end
     end
   end
@@ -61,15 +61,34 @@ describe Hearts do
     
     it "dealer should be the same after 4 dealer changes" do
       current_dealer = @hearts.dealer
-      2.times do
-        @hearts.reset_dealer
-      end
-      # dealer is actually changing
-      current_dealer.should_not == @hearts.dealer
-      2.times do
+      4.times do
         @hearts.reset_dealer
       end
       current_dealer.should == @hearts.dealer
+    end
+    
+    it "should not change the number of cards when shuffling" do
+      expect{ @hearts.shuffle_cards }.to_not change{ @hearts.deck.length }
+    end
+    
+    it "should shuffle the cards correctly" do
+      old_top = []
+      new_top = []
+      matches = 0
+      top = 0
+      
+      52.times do |i|
+        old_top << @hearts.deck[51 - i]
+      end
+      @hearts.shuffle_cards
+      52.times do |i|
+        new_top << @hearts.deck[51 - i]
+      end
+      52.times do |i|
+        matches += 1 if (old_top[i] == new_top[i])
+      end
+      
+      matches.should < 20
     end
     
     it "should 'play' a game of hearts and determine a winner" do
