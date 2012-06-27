@@ -14,6 +14,7 @@ class Hearts < CardGame
   end
   
   def load_players
+    @players = []
     @size.times do
       new_player = Player.new
       @players << new_player unless @players.include?(new_player)

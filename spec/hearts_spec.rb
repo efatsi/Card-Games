@@ -51,51 +51,134 @@ describe Hearts do
   end
 
   describe "#game_play" do
-  
-    it "reset dealer should choose next player in @players array" do
-      old_dealer_index = @hearts.players.index(@hearts.dealer)
-      @hearts.reset_dealer
-      new_dealer_index = @hearts.players.index(@hearts.dealer)
-      new_dealer_index.should == (old_dealer_index + 1) % 4
-    end
     
-    it "dealer should be the same after 4 dealer changes" do
-      current_dealer = @hearts.dealer
-      4.times do
+    context "#dealer_assignment" do
+      
+      it "reset dealer should choose next player in @players array" do
+        old_dealer_index = @hearts.players.index(@hearts.dealer)
         @hearts.reset_dealer
+        new_dealer_index = @hearts.players.index(@hearts.dealer)
+        new_dealer_index.should == (old_dealer_index + 1) % 4
       end
-      current_dealer.should == @hearts.dealer
-    end
     
-    it "should not change the number of cards when shuffling" do
-      expect{ @hearts.shuffle_cards }.to_not change{ @hearts.deck.length }
-    end
-    
-    it "should shuffle the cards correctly" do
-      old_top = []
-      new_top = []
-      matches = 0
-      top = 0
-      
-      52.times do |i|
-        old_top << @hearts.deck[51 - i]
-      end
-      @hearts.shuffle_cards
-      52.times do |i|
-        new_top << @hearts.deck[51 - i]
-      end
-      52.times do |i|
-        matches += 1 if (old_top[i] == new_top[i])
+      it "dealer should be the same after 4 dealer changes" do
+        current_dealer = @hearts.dealer
+        4.times do
+          @hearts.reset_dealer
+        end
+        current_dealer.should == @hearts.dealer
       end
       
-      matches.should < 20
     end
     
-    it "should 'play' a game of hearts and determine a winner" do
-      @hearts.game_over?.should == false
-      @hearts.play_game
-      @hearts.game_over?.should == true
-      @hearts.players.include?(@hearts.winner).should == true
+    context "#shuffling" do
+      
+      before :each do
+        @hearts.load_deck
+      end
+      
+      it "should not change the number of cards when shuffling" do
+        expect{ @hearts.shuffle_cards }.to_not change{ @hearts.deck.length }
+      end
+
+      it "should shuffle the cards correctly" do
+        old_top = []
+        new_top = []
+        matches = 0
+        top = 0
+
+        52.times do |i|
+          old_top << @hearts.deck[51 - i]
+        end
+        @hearts.shuffle_cards
+        52.times do |i|
+          new_top << @hearts.deck[51 - i]
+        end
+        52.times do |i|
+          matches += 1 if (old_top[i] == new_top[i])
+        end
+
+        matches.should < 20
+      end
+      
+    end
+    
+    context "#dealing" do
+      
+      before :each do
+        @hearts.load_deck
+        @hearts.deal_cards
+      end
+      
+      after :each do
+        @hearts.load_players
+      end
+      
+      it "should deal 13 cards to each player" do
+        @hearts.players.each do |player|
+          player.hand.length.should == 13
+        end
+        @hearts.deck.length.should == 0
+      end
+      
+      it 'should not deal any duplicate cards to one player' do
+        @hearts.players.each do |player|
+          player.hand.each do |card|
+            other_cards = [] + player.hand
+            expect{ other_cards.delete(card) }.to change{ other_cards.length }.from(13).to(12)
+            other_cards.include?(card).should be_false
+          end
+        end
+      end
+      
+      it "should not deal any duplicate cards to other players" do
+        match = []
+        @hearts.players.each do |player|
+          other_players = [] + @hearts.players
+          other_players.delete(player)
+          others_cards = []
+          other_players.each do |other|
+            others_cards << other.hand
+          end
+          player.hand.each do |card|
+            match << others_cards.include?(card)
+          end
+        end 
+        match.length.should == 52
+        match.include?(true).should be_false
+      end
+      
+      
+    end
+    
+    context "#play_hand" do
+      
+      before do
+        @hearts.load_deck
+        @hearts.deal_cards
+      end
+      
+      it "should take one card from every player" do
+        @hearts.play_hand
+        @hearts.players.each do |player|
+          player.hand.length.should == 12
+        end
+      end
+      
+      it "should put 4 more cards in the deck" do
+        @hearts.play_hand
+        @hearts.deck.length.should == 4
+      end
+      
+    end
+    
+    context "#whole_game" do
+      it "should 'play' a game of hearts and determine a winner" do
+        @hearts.game_over?.should == false
+        @hearts.play_game
+        @hearts.game_over?.should == true
+        @hearts.players.include?(@hearts.winner).should == true
+      end
     end
   end
 
