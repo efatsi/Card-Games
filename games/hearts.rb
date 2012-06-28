@@ -99,12 +99,20 @@ class Hearts < CardGame
   end
   
   def update_total_scores
-    # @players.each do |player|
-    #   if player.round_score == 26
-    #     @players.each { |p| p.score += 26 unless p == player }
-    #   end
-    #   player.score += player.round_score
-    # end
+    update_round_scores
+    @players.each do |player|
+      if player.round_score == 26
+        @players.each { |p| p.total_score += 26 unless p == player }
+      else
+        player.total_score += player.round_score
+      end
+    end
+  end
+  
+  def reset_total_scores
+    @players.each do |player|
+      player.total_score = 0
+    end
   end
   
   def return_cards

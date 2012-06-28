@@ -214,6 +214,7 @@ describe Hearts do
       
       after :each do
         @hearts.return_cards
+        @hearts.reset_total_scores
       end
       
       it "should know the suit of the card" do
@@ -233,7 +234,7 @@ describe Hearts do
         "AD".suit.should == :diamond
       end
       
-      it "should properly record scores after a scattered round" do
+      it "should properly record round scores after a scattered round" do
         52.times do |i|
           @hearts.players[i%4].round_collection << @hearts.deck[i]
           # players[0] has 5H 9H KH QS
@@ -248,7 +249,7 @@ describe Hearts do
         @hearts.players[3].round_score.should == 3
       end
 
-      it "should properly record scores after a suit-swept round" do
+      it "should properly record round scores after a suit-swept round" do
         52.times do |i|
           @hearts.players[i/13].round_collection << @hearts.deck[i]
           # players[0] has all clubs
@@ -264,7 +265,7 @@ describe Hearts do
       end
       
       
-      it "should properly record scores after a totally-swept round" do
+      it "should properly record round scores after a totally-swept round" do
         52.times do |i|
           @hearts.players[1].round_collection << @hearts.deck[i]
           # players[1] has all the cards
@@ -276,6 +277,38 @@ describe Hearts do
         @hearts.players[3].round_score.should == 0
       end
       
+      it "should properly record total_scores after a scattered round" do
+        52.times do |i|
+          @hearts.players[i%4].round_collection << @hearts.deck[i]
+        end
+        @hearts.update_total_scores
+        @hearts.players[0].total_score.should == 16
+        @hearts.players[1].total_score.should == 4
+        @hearts.players[2].total_score.should == 3
+        @hearts.players[3].total_score.should == 3        
+      end
+      
+      it "should properly record total_scores after a suit-swept round" do
+        52.times do |i|
+          @hearts.players[i/13].round_collection << @hearts.deck[i]
+        end
+        @hearts.update_total_scores
+        @hearts.players[0].total_score.should == 0
+        @hearts.players[1].total_score.should == 13
+        @hearts.players[2].total_score.should == 13
+        @hearts.players[3].total_score.should == 0
+      end
+      
+      it "should properly record total_scores after a totally-swept round" do
+        52.times do |i|
+          @hearts.players[1].round_collection << @hearts.deck[i]
+        end
+        @hearts.update_total_scores
+        @hearts.players[0].total_score.should == 26
+        @hearts.players[1].total_score.should == 0
+        @hearts.players[2].total_score.should == 26
+        @hearts.players[3].total_score.should == 26
+      end
       
     end
 
