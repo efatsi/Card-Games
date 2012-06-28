@@ -31,6 +31,17 @@ class Hearts < CardGame
     @players[rand(@players.length)]
   end
   
+  def pick_highest_player
+    max = 0
+    @players.each do |player|
+      if player.total_score > max
+        @winner = player
+        max = player.total_score
+      end
+    end  
+    @winner    
+  end
+  
   def play_game
     load_deck
     load_players
@@ -50,7 +61,7 @@ class Hearts < CardGame
     update_total_scores
     return_cards
     if (rand < 0.3)
-      @winner = pick_random_player
+      @winner = pick_highest_player
     end
   end
   
@@ -149,18 +160,6 @@ class Hearts < CardGame
   
 end
 
-class String
-  def suit
-    return :club if self[self.length-1] == 67
-    return :heart if self[self.length-1] == 72
-    return :spade if self[self.length-1] == 83
-    return :diamond if self[self.length-1] == 68
-  end
-  
-  def value
-    return "Q" if self[0] == 81
-  end
-end
 
 @hearts = Hearts.new
 @hearts.play_game
