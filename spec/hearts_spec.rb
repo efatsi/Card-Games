@@ -51,16 +51,16 @@ describe Hearts do
   end
 
   describe "#game_play" do
-    
+
     context "#dealer_assignment" do
-      
+
       it "reset dealer should choose next player in @players array" do
         old_dealer_index = @hearts.players.index(@hearts.dealer)
         @hearts.reset_dealer
         new_dealer_index = @hearts.players.index(@hearts.dealer)
         new_dealer_index.should == (old_dealer_index + 1) % 4
       end
-    
+
       it "dealer should be the same after 4 dealer changes" do
         current_dealer = @hearts.dealer
         4.times do
@@ -68,15 +68,15 @@ describe Hearts do
         end
         current_dealer.should == @hearts.dealer
       end
-      
+
     end
-    
+
     context "#shuffling" do
-      
+
       before :each do
         @hearts.load_deck
       end
-      
+
       it "should not change the number of cards when shuffling" do
         expect{ @hearts.shuffle_cards }.to_not change{ @hearts.deck.length }
       end
@@ -100,27 +100,27 @@ describe Hearts do
 
         matches.should < 20
       end
-      
+
     end
-    
+
     context "#dealing" do
-      
+
       before :each do
         @hearts.load_deck
         @hearts.deal_cards
       end
-      
+
       after :each do
         @hearts.load_players
       end
-      
+
       it "should deal 13 cards to each player" do
         @hearts.players.each do |player|
           player.hand.length.should == 13
         end
         @hearts.deck.length.should == 0
       end
-      
+
       it 'should not deal any duplicate cards to one player' do
         @hearts.players.each do |player|
           player.hand.each do |card|
@@ -130,7 +130,7 @@ describe Hearts do
           end
         end
       end
-      
+
       it "should not deal any duplicate cards to other players" do
         match = []
         @hearts.players.each do |player|
@@ -147,31 +147,74 @@ describe Hearts do
         match.length.should == 52
         match.include?(true).should be_false
       end
-      
-      
+
+
     end
-    
-    context "#play_hand" do
-      
-      before do
+
+    context "#first_hand" do
+
+      before :each do
         @hearts.load_deck
         @hearts.deal_cards
+        @hearts.play_hand
       end
       
+      after :each do
+        @hearts.return_cards
+      end
+
       it "should take one card from every player" do
-        @hearts.play_hand
         @hearts.players.each do |player|
           player.hand.length.should == 12
         end
       end
-      
-      it "should put 4 more cards in the deck" do
-        @hearts.play_hand
-        @hearts.deck.length.should == 4
+
+      it "should put 4 more cards in someone's round_collection" do
+        total = 0
+        @hearts.players.each do |player|
+          total += player.round_collection.length
+        end
+        total.should == 4
+      end
+
+    end
+
+    context "#13_hands" do
+
+      before do
+        @hearts.load_deck
+        @hearts.deal_cards
+        13.times { @hearts.play_hand }
       end
       
+      after :each do
+        @hearts.return_cards
+      end
+
+      it "should empty the players hands" do
+        @hearts.players.each do |player|
+          player.hand.length.should == 0
+        end
+      end
+
+      it "should fill the round_collections" do
+        total = 0
+        @hearts.players.each do |player|
+          total += player.round_collection.length
+        end
+        total.should == 52
+      end
+
     end
     
+    context "#scoring" do
+      
+      # it "should properly record scores after a round" do
+      #   @hearts.players.each do |player|
+      #     player.round_score = 
+      # end
+    end
+
     context "#whole_game" do
       it "should 'play' a game of hearts and determine a winner" do
         @hearts.game_over?.should == false

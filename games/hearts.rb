@@ -26,8 +26,8 @@ class Hearts < CardGame
     @deck = Deck.new.cards
   end
   
-  def hearts_winner(players)
-    @players[(rand*players.length).floor]
+  def pick_random_player
+    @players[rand(@players.length)]
   end
   
   def play_game
@@ -41,7 +41,9 @@ class Hearts < CardGame
     13.times do
       play_hand
     end
-    @winner = hearts_winner(@players)
+    update_scores
+    return_cards
+    @winner = pick_random_player
   end
   
   def reset_dealer
@@ -71,13 +73,47 @@ class Hearts < CardGame
   end
   
   def play_hand
+    dealt = []
     @players.each do |player|
       choice = player.hand.last
-      @deck << choice
+      dealt << choice
       player.hand.delete(choice)
+    end
+    recipient = pick_random_player
+    dealt.each do |card|
+      recipient.round_collection << card
     end
   end
   
+  def update_scores
+    @players.each do |player|
+      if player.round_score == 26
+        @players.each { |p| p.score += 26 unless p == player }
+      end
+      player.score += player.round_score
+    end
+  end
+  
+  def return_cards
+    @players.each do |player|
+      player.hand.each do |card|
+        deck << card
+      end
+      player.round_collection do |card|
+        deck << card
+      end  
+      player.hand = []
+      player.round_collection = []
+    end
+  end
+  
+  def played
+    total = 0
+    @players.each do |player|
+      total += player.round_collection.length
+    end   
+    total 
+  end
   
 end
 
