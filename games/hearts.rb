@@ -35,7 +35,7 @@ class Hearts < CardGame
   end
   
   def play_round
-    reset_dealer
+    change_dealer
     shuffle_cards
     deal_cards
     13.times do
@@ -46,7 +46,7 @@ class Hearts < CardGame
     @winner = pick_random_player
   end
   
-  def reset_dealer
+  def change_dealer
     current_index = @players.index(@dealer)
     @dealer = @players[(current_index+1) % @size]
   end
@@ -91,7 +91,7 @@ class Hearts < CardGame
       player.round_collection.each do |card|
         if card.suit == :heart
           player.round_score += 1
-        elsif card == "QS"
+        elsif card.value == "Q" && card.suit == :spade
           player.round_score += 13
         end
       end
@@ -146,6 +146,10 @@ class String
     return :heart if self[self.length-1] == "H"
     return :spade if self[self.length-1] == "S"
     return :diamond if self[self.length-1] == "D"
+  end
+  
+  def value
+    self[0, self.length-1]
   end
 end
 

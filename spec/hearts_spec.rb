@@ -56,7 +56,7 @@ describe Hearts do
 
       it "reset dealer should choose next player in @players array" do
         old_dealer_index = @hearts.players.index(@hearts.dealer)
-        @hearts.reset_dealer
+        @hearts.change_dealer
         new_dealer_index = @hearts.players.index(@hearts.dealer)
         new_dealer_index.should == (old_dealer_index + 1) % 4
       end
@@ -64,7 +64,7 @@ describe Hearts do
       it "dealer should be the same after 4 dealer changes" do
         current_dealer = @hearts.dealer
         4.times do
-          @hearts.reset_dealer
+          @hearts.change_dealer
         end
         current_dealer.should == @hearts.dealer
       end
