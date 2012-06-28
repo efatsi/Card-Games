@@ -1,10 +1,22 @@
+# require_relative "card.rb"    # for tests
+require "../card.rb" # run with game
+
 class Deck
   
   attr_accessor :cards
   
   def initialize
-    @cards = (2..10).map{|i| "#{i}C"}+["JC","QC","KC","AC"]+(2..10).map{|i| "#{i}H"}+["JH","QH","KH","AH"]+
-    (2..10).map{|i| "#{i}S"}+["JS","QS","KS","AS"]+(2..10).map{|i| "#{i}D"}+["JD","QD","KD","AD"]
+    @cards = []
+    
+    [:club, :heart, :spade, :diamond].each do |suit|
+      (2..10).each do |value|
+        @cards << Card.new(suit, value.to_s)      
+      end
+      ["J", "Q", "K", "A"].each do |value|
+        @cards << Card.new(suit, value.to_s)
+      end
+    end
+      
   end
   
 end

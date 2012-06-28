@@ -9,45 +9,51 @@ describe Hearts do
   end
 
   describe "#new_hearts" do
+  
     it "should show that hearts has been initiated" do
       @hearts.should be_an_instance_of Hearts
     end
+  
   end
 
-  describe "#get_deck" do
-    it "should return a new array" do
-      @hearts.deck.should be_an_instance_of Array
-    end
-    it "should show that deck has 52 cards" do
-      @hearts.deck.length.should == 52
-    end
-    it "should show deck has all the cards" do
-      (2..10).each do |i|
-        @hearts.deck.include?("#{i}C").should == true
-        @hearts.deck.include?("#{i}H").should == true      
-        @hearts.deck.include?("#{i}S").should == true
-        @hearts.deck.include?("#{i}D").should == true
+  describe "#setup" do
+    
+    context "#get_deck" do
+      it "should return a new array" do
+        @hearts.deck.should be_an_instance_of Array
       end
-      ["J","Q","K","A"].each do |f|
-        @hearts.deck.include?("#{f}C").should == true
-        @hearts.deck.include?("#{f}H").should == true      
-        @hearts.deck.include?("#{f}S").should == true
-        @hearts.deck.include?("#{f}D").should == true
+      it "should show that deck has 52 cards" do
+        @hearts.deck.length.should == 52
+      end
+      it "should show deck has all the cards" do
+        deck_string = []
+        @hearts.deck.each do |card|
+          deck_string << card.value.to_s + card.suit.to_s
+        end
+        %w(club heart spade diamond).each do |suit|
+          (2..10).each do |i|
+            deck_string.include?(i.to_s + suit.to_s).should == true
+          end
+          ["J","Q","K","A"].each do |f|
+            deck_string.include?(f.to_s + suit.to_s).should == true
+          end
+        end
       end
     end
-  end
 
-  describe "#get_players" do
-    it "should show required number of players" do
-      @hearts.size.should == 4
+    context "#get_players" do
+      it "should show required number of players" do
+        @hearts.size.should == 4
+      end
+      it "should load in required number of players" do
+        @hearts.players.length.should == @hearts.size
+      end
+      it "should have picked a dealer" do
+        @hearts.dealer.should_not be_nil
+        @hearts.players.include?(@hearts.dealer).should == true
+      end
     end
-    it "should load in required number of players" do
-      @hearts.players.length.should == @hearts.size
-    end
-    it "should have picked a dealer" do
-      @hearts.dealer.should_not be_nil
-      @hearts.players.include?(@hearts.dealer).should == true
-    end
+  
   end
 
   describe "#game_play" do
@@ -217,23 +223,6 @@ describe Hearts do
         @hearts.reset_total_scores
       end
       
-      it "should know the suit of the card" do
-        "2C".suit.should == :club
-        "2H".suit.should == :heart
-        "2S".suit.should == :spade
-        "2D".suit.should == :diamond
-
-        "10C".suit.should == :club
-        "10H".suit.should == :heart
-        "10S".suit.should == :spade
-        "10D".suit.should == :diamond
-
-        "JC".suit.should == :club
-        "QH".suit.should == :heart
-        "KS".suit.should == :spade
-        "AD".suit.should == :diamond
-      end
-      
       it "should properly record round scores after a scattered round" do
         52.times do |i|
           @hearts.players[i%4].round_collection << @hearts.deck[i]
@@ -320,13 +309,16 @@ describe Hearts do
         @hearts.players.include?(@hearts.winner).should == true
       end
     end
+  
   end
 
   describe "#reset" do
+    
     it "should reset the games with no players and no winner" do
       @hearts.reset
       @hearts.players.empty?.should == true
       @hearts.game_over?.should == false
+    
     end
   end
 
