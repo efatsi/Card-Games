@@ -1,9 +1,9 @@
-require './card_game.rb'   # for testing
-# require '../card_game.rb'  # for running
+# require './card_game.rb'   # for testing
+require '../card_game.rb'  # for running
 
 class Hearts < CardGame
   
-  attr_accessor :dealer
+  attr_accessor :dealer, :rounds
   
   def initialize
     @size = 4  
@@ -11,6 +11,7 @@ class Hearts < CardGame
     @winner = nil
     @deck = []
     @dealer = nil
+    @rounds = 0
   end
   
   def load_players
@@ -31,7 +32,12 @@ class Hearts < CardGame
   end
   
   def play_game
-    play_round unless game_over?    
+    load_deck
+    load_players
+    while(!game_over?)
+      @rounds += 1
+      play_round
+    end    
   end
   
   def play_round
@@ -43,7 +49,9 @@ class Hearts < CardGame
     end
     update_total_scores
     return_cards
-    @winner = pick_random_player
+    if (rand < 0.3)
+      @winner = pick_random_player
+    end
   end
   
   def change_dealer
@@ -94,7 +102,7 @@ class Hearts < CardGame
         elsif card.value == "Q" && card.suit == :spade
           player.round_score += 13
         end
-      end
+      end  
     end
   end
   
@@ -118,14 +126,15 @@ class Hearts < CardGame
   def return_cards
     @players.each do |player|
       player.hand.each do |card|
-        deck << card
+        @deck << card
       end
-      player.round_collection do |card|
-        deck << card
-      end  
+      player.round_collection.each do |card|
+        @deck << card
+      end
       player.hand = []
       player.round_collection = []
     end
+    
   end
   
   def played
@@ -142,15 +151,20 @@ end
 
 class String
   def suit
-    return :club if self[self.length-1] == "C"
-    return :heart if self[self.length-1] == "H"
-    return :spade if self[self.length-1] == "S"
-    return :diamond if self[self.length-1] == "D"
+    return :club if self[self.length-1] == 67
+    return :heart if self[self.length-1] == 72
+    return :spade if self[self.length-1] == 83
+    return :diamond if self[self.length-1] == 68
   end
   
   def value
-    self[0, self.length-1]
+    return "Q" if self[0] == 81
   end
 end
+
+@hearts = Hearts.new
+@hearts.play_game
+p @hearts.winner
+p @hearts.rounds
 
 
