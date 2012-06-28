@@ -41,7 +41,7 @@ class Hearts < CardGame
     13.times do
       play_hand
     end
-    update_scores
+    update_total_scores
     return_cards
     @winner = pick_random_player
   end
@@ -85,13 +85,26 @@ class Hearts < CardGame
     end
   end
   
-  def update_scores
+  def update_round_scores
     @players.each do |player|
-      if player.round_score == 26
-        @players.each { |p| p.score += 26 unless p == player }
+      player.round_score = 0
+      player.round_collection.each do |card|
+        if card.suit == :heart
+          player.round_score += 1
+        elsif card == "QS"
+          player.round_score += 13
+        end
       end
-      player.score += player.round_score
     end
+  end
+  
+  def update_total_scores
+    # @players.each do |player|
+    #   if player.round_score == 26
+    #     @players.each { |p| p.score += 26 unless p == player }
+    #   end
+    #   player.score += player.round_score
+    # end
   end
   
   def return_cards
@@ -108,13 +121,24 @@ class Hearts < CardGame
   end
   
   def played
-    total = 0
+    played_cards = []
     @players.each do |player|
-      total += player.round_collection.length
+      player.round_collection.each do |card|
+        played_cards << card
+      end
     end   
-    total 
+    played_cards
   end
   
+end
+
+class String
+  def suit
+    return :club if self[self.length-1] == "C"
+    return :heart if self[self.length-1] == "H"
+    return :spade if self[self.length-1] == "S"
+    return :diamond if self[self.length-1] == "D"
+  end
 end
 
 

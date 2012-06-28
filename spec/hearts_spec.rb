@@ -111,7 +111,7 @@ describe Hearts do
       end
 
       after :each do
-        @hearts.load_players
+        @hearts.return_cards
       end
 
       it "should deal 13 cards to each player" do
@@ -119,6 +119,7 @@ describe Hearts do
           player.hand.length.should == 13
         end
         @hearts.deck.length.should == 0
+        @hearts.played.length.should == 0
       end
 
       it 'should not deal any duplicate cards to one player' do
@@ -154,7 +155,6 @@ describe Hearts do
     context "#first_hand" do
 
       before :each do
-        @hearts.load_deck
         @hearts.deal_cards
         @hearts.play_hand
       end
@@ -182,7 +182,6 @@ describe Hearts do
     context "#13_hands" do
 
       before do
-        @hearts.load_deck
         @hearts.deal_cards
         13.times { @hearts.play_hand }
       end
@@ -209,10 +208,75 @@ describe Hearts do
     
     context "#scoring" do
       
-      # it "should properly record scores after a round" do
-      #   @hearts.players.each do |player|
-      #     player.round_score = 
-      # end
+      before :all do
+        @hearts.load_deck
+      end
+      
+      after :each do
+        @hearts.return_cards
+      end
+      
+      it "should know the suit of the card" do
+        "2C".suit.should == :club
+        "2H".suit.should == :heart
+        "2S".suit.should == :spade
+        "2D".suit.should == :diamond
+
+        "10C".suit.should == :club
+        "10H".suit.should == :heart
+        "10S".suit.should == :spade
+        "10D".suit.should == :diamond
+
+        "JC".suit.should == :club
+        "QH".suit.should == :heart
+        "KS".suit.should == :spade
+        "AD".suit.should == :diamond
+      end
+      
+      it "should properly record scores after a scattered round" do
+        52.times do |i|
+          @hearts.players[i%4].round_collection << @hearts.deck[i]
+          # players[0] has 5H 9H KH QS
+          # players[1] has 2H 6H 10H AH
+          # players[2] has 3H 7H JH 
+          # players[3] has 4H 8H QH 
+        end
+        @hearts.update_round_scores
+        @hearts.players[0].round_score.should == 16
+        @hearts.players[1].round_score.should == 4
+        @hearts.players[2].round_score.should == 3
+        @hearts.players[3].round_score.should == 3
+      end
+
+      it "should properly record scores after a suit-swept round" do
+        52.times do |i|
+          @hearts.players[i/13].round_collection << @hearts.deck[i]
+          # players[0] has all clubs
+          # players[1] has all hearts
+          # players[2] has all spades
+          # players[3] has all diamonds
+        end
+        @hearts.update_round_scores
+        @hearts.players[0].round_score.should == 0
+        @hearts.players[1].round_score.should == 13
+        @hearts.players[2].round_score.should == 13
+        @hearts.players[3].round_score.should == 0
+      end
+      
+      
+      it "should properly record scores after a totally-swept round" do
+        52.times do |i|
+          @hearts.players[1].round_collection << @hearts.deck[i]
+          # players[1] has all the cards
+        end
+        @hearts.update_round_scores
+        @hearts.players[0].round_score.should == 0
+        @hearts.players[1].round_score.should == 26
+        @hearts.players[2].round_score.should == 0
+        @hearts.players[3].round_score.should == 0
+      end
+      
+      
     end
 
     context "#whole_game" do
