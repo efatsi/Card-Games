@@ -113,8 +113,11 @@ class Hearts < CardGame
   
   def play_trick
     trick = []
-    @players.each do |player|
-      if player == @players[0]
+    leader_index = @players.index(@leader)
+    leader_index ||= 0
+    4.times do |i|
+      player = @players[(leader_index+i)%4]
+      if player == @leader
         choice = player.hand.last
         @lead_suit = choice.suit
       else
@@ -138,7 +141,10 @@ class Hearts < CardGame
   
   def determine_trick_winner(trick)
     max = trick.first
-    trick.each do |card|
+    leader_index = @players.index(@leader)
+    leader_index ||= 0
+    4.times do |i|
+      card = trick[(leader_index+i)%4]
       max = card if card.beats?(max)
     end
     @leader = @players[trick.index(max)] 

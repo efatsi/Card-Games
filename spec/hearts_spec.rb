@@ -451,7 +451,7 @@ describe Hearts do
 
     end
 
-    context "#lead_suit" do
+    pending "#lead_suit" do
       
       before :each do
         @hearts.load_players
