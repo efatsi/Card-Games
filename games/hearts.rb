@@ -20,9 +20,10 @@ class Hearts < CardGame
     @rounds = 0
     @played = []
     @lead_suit = nil
-    @leader
+    @leader = nil
   end
   
+  # resets 4 players, loads up a random dealer
   def load_players
     @players = []
     @size.times do
@@ -32,6 +33,7 @@ class Hearts < CardGame
     @dealer = @players[rand(@size)]
   end
   
+  # resets the deck and played cards
   def load_deck
     @deck = Deck.new.cards
     @played = []
@@ -43,13 +45,14 @@ class Hearts < CardGame
   
   def pick_highest_player
     max = 0
+    highest = nil
     @players.each do |player|
-      if player.total_score > max
-        @winner = player
+      if player.total_score >= max
+        highest = player
         max = player.total_score
       end
     end  
-    @winner    
+    highest    
   end
   
   def play_game
@@ -68,6 +71,7 @@ class Hearts < CardGame
     end    
   end
   
+  # deal cards, pay 13 tricks, 
   def play_round
     deal_cards
     13.times do
@@ -92,10 +96,13 @@ class Hearts < CardGame
     end
   end
   
+  # empty deck on the players one at a time
   def deal_cards
     if @deck.length == 52
+      dealer_index = @players.index(@dealer)
       13.times do
-        @players.each do |player|
+        4.times do |i|
+          player = @players[(dealer_index+i+1)%4]
           top = @deck.last
           player.hand << top
           @deck.delete(top)
@@ -114,8 +121,7 @@ class Hearts < CardGame
         choice = nil
         player.hand.each do |card|
           if card.suit == @lead_suit
-            choice = card
-            
+            choice = card  
           end
         end
         choice = player.hand.last if choice.nil?

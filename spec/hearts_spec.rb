@@ -6,15 +6,15 @@ describe Hearts do
     @hearts = Hearts.new
   end
 
-  describe "#new_hearts" do
-  
-    it "should show that hearts has been initiated" do
-      @hearts.should be_an_instance_of Hearts
-    end
-  
-  end
-
   describe "#setup" do
+    
+    context "#new_hearts" do
+
+      it "should show that hearts has been initiated" do
+        @hearts.should be_an_instance_of Hearts
+      end
+
+    end
     
     context "#get_deck" do
       
@@ -60,6 +60,7 @@ describe Hearts do
         @hearts.dealer.should_not be_nil
         @hearts.players.include?(@hearts.dealer).should == true
       end
+
     end
   
   end
@@ -179,65 +180,17 @@ describe Hearts do
         match.length.should == 52
         match.include?(true).should be_false
       end
-
-    end
-
-    context "#first_trick" do
-
-      before :each do
-        @hearts.load_players
-        @hearts.deal_cards
-        @hearts.play_trick
-      end
       
-      after :each do
+      it "should deal first card to the 'left' of the dealer" do
         @hearts.return_cards
-      end
-
-      it "should take one card from every player" do
-        @hearts.players.each do |player|
-          player.hand.length.should == 12
-        end
-      end
-
-      it "should put 4 more cards in someone's round_collection" do
-        total = 0
-        @hearts.players.each do |player|
-          total += player.round_collection.length
-        end
-        total.should == 4
-      end
-
-    end
-
-    context "#13_trick" do
-
-      before do
-        @hearts.load_players
+        dealer_index = @hearts.players.index(@hearts.dealer)
+        top_card = @hearts.deck.last
         @hearts.deal_cards
-        13.times { @hearts.play_trick }
-      end
-      
-      after :each do
-        @hearts.return_cards
-      end
-
-      it "should empty the players hands" do
-        @hearts.players.each do |player|
-          player.hand.length.should == 0
-        end
-      end
-
-      it "should fill the round_collections" do
-        total = 0
-        @hearts.players.each do |player|
-          total += player.round_collection.length
-        end
-        total.should == 52
+        @hearts.players[(dealer_index+1)%4].hand.include?(top_card).should == true
       end
 
     end
-    
+
     context "#returning_cards" do
       
       before :each do
@@ -427,10 +380,77 @@ describe Hearts do
       end
     end
   
+    context "#reset" do
+
+      it "should reset the games with no players and no winner" do
+        @hearts.reset
+        @hearts.players.empty?.should == true
+        @hearts.game_over?.should == false
+
+      end
+      
+    end
+    
   end
   
   describe "#trick_play" do
     
+    context "#first_trick" do
+
+      before :each do
+        @hearts.load_players
+        @hearts.deal_cards
+        @hearts.play_trick
+      end
+      
+      after :each do
+        @hearts.return_cards
+      end
+
+      it "should take one card from every player" do
+        @hearts.players.each do |player|
+          player.hand.length.should == 12
+        end
+      end
+
+      it "should put 4 more cards in someone's round_collection" do
+        total = 0
+        @hearts.players.each do |player|
+          total += player.round_collection.length
+        end
+        total.should == 4
+      end
+
+    end
+
+    context "#13_tricks" do
+
+      before do
+        @hearts.load_players
+        @hearts.deal_cards
+        13.times { @hearts.play_trick }
+      end
+      
+      after :each do
+        @hearts.return_cards
+      end
+
+      it "should empty the players hands" do
+        @hearts.players.each do |player|
+          player.hand.length.should == 0
+        end
+      end
+
+      it "should fill the round_collections" do
+        total = 0
+        @hearts.players.each do |player|
+          total += player.round_collection.length
+        end
+        total.should == 52
+      end
+
+    end
+
     context "#lead_suit" do
       
       before :each do
@@ -556,16 +576,5 @@ describe Hearts do
     end
     
   end
-
-  describe "#reset" do
-    
-    it "should reset the games with no players and no winner" do
-      @hearts.reset
-      @hearts.players.empty?.should == true
-      @hearts.game_over?.should == false
-    
-    end
-  end
-
 
 end
