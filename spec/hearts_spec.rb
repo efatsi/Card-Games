@@ -465,6 +465,96 @@ describe Hearts do
     
     end
     
+    context "#card_beater" do
+      
+      it "should correctly determine if one card of same suit beats another" do
+        values = %w(2 3 4 5 6 7 8 9 10 J Q K A)
+        values.each do |first_value|
+          first_card = Card.new(:club, first_value)
+          values[0, values.index(first_value)].each do |second_value|
+            second_card = Card.new(:club, second_value)
+            first_card.beats?(second_card).should == true
+            second_card.beats?(first_card).should == false
+          end
+        end          
+      end
+
+      it "should have a card not beat another of different suit" do
+        first_card = Card.new(:club, "A")
+        second_card = Card.new(:heart, "3")
+        first_card.beats?(second_card).should == false
+        second_card.beats?(first_card).should == false
+      end
+
+      it "should have a card not beat itself (unreal situation)" do
+        values = %w(2 3 4 5 6 7 8 9 10 J Q K A)
+        values.each do |value|
+          first_card = Card.new(:club, value)
+          second_card = Card.new(:club, value)
+          first_card.beats?(second_card).should == false
+          second_card.beats?(first_card).should == false
+        end
+      end
+      
+    end
+    
+    context "#trick_winner" do
+      
+      before :each do
+        @hearts.load_players
+      end
+      
+      it "should correctly determine the winner of a trick" do
+        fake_trick = []
+        @hearts.lead_suit = :club
+        ["2", "3", "4", "5"].each do |value|
+          fake_trick << Card.new(:club, value)
+        end
+        @hearts.determine_trick_winner(fake_trick)
+        @hearts.leader.should == @hearts.players.last
+      end
+      
+      it "should correctly determine the winner of a trick" do
+        fake_trick = []
+        @hearts.lead_suit = :club
+        ["2", "3", "8", "5"].each do |value|
+          fake_trick << Card.new(:club, value)
+        end
+        @hearts.determine_trick_winner(fake_trick)
+        @hearts.leader.should == @hearts.players[2]
+      end
+      
+      it "should correctly determine the winner of a trick" do
+        fake_trick = []
+        @hearts.lead_suit = :club
+        ["2", "3", "8", "A"].each do |value|
+          fake_trick << Card.new(:club, value)
+        end
+        @hearts.determine_trick_winner(fake_trick)
+        @hearts.leader.should == @hearts.players.last
+      end
+      
+      it "should correctly determine the winner of a trick" do
+        fake_trick = []
+        @hearts.lead_suit = :club
+        ["J", "Q", "K", "A"].each do |value|
+          fake_trick << Card.new(:club, value)
+        end
+        @hearts.determine_trick_winner(fake_trick)
+        @hearts.leader.should == @hearts.players.last
+      end
+      
+      it "should correctly determine the winner of a trick" do
+        fake_trick = []
+        @hearts.lead_suit = :club
+        ["A", "Q", "K", "J"].each do |value|
+          fake_trick << Card.new(:club, value)
+        end
+        @hearts.determine_trick_winner(fake_trick)
+        @hearts.leader.should == @hearts.players.first
+      end
+    end
+    
   end
 
   describe "#reset" do

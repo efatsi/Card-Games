@@ -9,7 +9,7 @@ end
 
 class Hearts < CardGame
   
-  attr_accessor :dealer, :rounds, :played, :lead_suit
+  attr_accessor :dealer, :rounds, :played, :lead_suit, :leader 
   
   def initialize
     @size = 4  
@@ -20,6 +20,7 @@ class Hearts < CardGame
     @rounds = 0
     @played = []
     @lead_suit = nil
+    @leader
   end
   
   def load_players
@@ -33,6 +34,7 @@ class Hearts < CardGame
   
   def load_deck
     @deck = Deck.new.cards
+    @played = []
   end
   
   def pick_random_player
@@ -70,6 +72,7 @@ class Hearts < CardGame
     deal_cards
     13.times do
       play_trick
+      determine_trick_winner(@played[@played.length-4, 4])
     end
   end
   
@@ -102,7 +105,7 @@ class Hearts < CardGame
   end
   
   def play_trick
-    played = []
+    trick = []
     @players.each do |player|
       if player == @players[0]
         choice = player.hand.last
@@ -112,19 +115,29 @@ class Hearts < CardGame
         player.hand.each do |card|
           if card.suit == @lead_suit
             choice = card
+            
           end
         end
         choice = player.hand.last if choice.nil?
       end
-      played << choice
+      trick << choice
       player.hand.delete(choice)
     end
     recipient = pick_random_player
-    played.each do |card|
+    trick.each do |card|
       recipient.round_collection << card
       @played << card
     end
   end
+  
+  def determine_trick_winner(trick)
+    max = trick.first
+    trick.each do |card|
+      max = card if card.beats?(max)
+    end
+    @leader = @players[trick.index(max)] 
+  end
+  
   
   def update_round_scores
     @players.each do |player|
@@ -172,6 +185,38 @@ class Hearts < CardGame
   
 end
 
+class Card
+  
+  def beats?(card)
+    return false if self.suit != card.suit
+    
+    # if it's a face card
+    if self.value.to_i == 0
+      return true if card.value.to_i != 0
+
+      case self.value
+      when "A"
+        return false if ["A"].include?(card.value)
+        return true
+      when "K"
+        return false if ["A", "K"].include?(card.value)
+        return true
+      when "Q"
+        return false if ["A", "K", "Q"].include?(card.value)
+        return true
+      else
+        return false
+      end
+      
+    # if it isn't a face card
+    else
+      return false if card.value.to_i == 0
+      self.value.to_i > card.value.to_i
+    end
+    
+  end
+  
+end
 
 @hearts = Hearts.new
 @hearts.play_game
