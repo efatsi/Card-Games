@@ -4,8 +4,6 @@ describe Hearts do
 
   before :all do
     @hearts = Hearts.new
-    @hearts.load_deck
-    @hearts.load_players
   end
 
   describe "#new_hearts" do
@@ -19,6 +17,11 @@ describe Hearts do
   describe "#setup" do
     
     context "#get_deck" do
+      
+      before :each do
+        @hearts.load_deck
+      end
+      
       it "should return a new array" do
         @hearts.deck.should be_an_instance_of Array
       end
@@ -42,6 +45,11 @@ describe Hearts do
     end
 
     context "#get_players" do
+      
+      before :each do
+        @hearts.load_players
+      end
+      
       it "should show required number of players" do
         @hearts.size.should == 4
       end
@@ -59,6 +67,14 @@ describe Hearts do
   describe "#game_play" do
 
     context "#dealer_assignment" do
+      
+      before :each do
+        @hearts.load_players
+      end
+      
+      it "should have a dealer" do
+        @hearts.dealer.should_not be_nil
+      end
 
       it "reset dealer should choose next player in @players array" do
         old_dealer_index = @hearts.players.index(@hearts.dealer)
@@ -112,6 +128,7 @@ describe Hearts do
     context "#dealing" do
 
       before :each do
+        @hearts.load_players
         @hearts.load_deck
         @hearts.deal_cards
       end
@@ -126,6 +143,14 @@ describe Hearts do
         end
         @hearts.deck.length.should == 0
         @hearts.played.length.should == 0
+      end
+      
+      it "should deal non-nil cards to all players" do
+        @hearts.players.each do |player|
+          player.hand.each do |card|
+            card.should_not be_nil
+          end
+        end
       end
 
       it 'should not deal any duplicate cards to one player' do
@@ -155,12 +180,12 @@ describe Hearts do
         match.include?(true).should be_false
       end
 
-
     end
 
     context "#first_hand" do
 
       before :each do
+        @hearts.load_players
         @hearts.deal_cards
         @hearts.play_hand
       end
@@ -185,9 +210,55 @@ describe Hearts do
 
     end
 
+    context "#returning_cards" do
+      
+      before :each do
+        @hearts.load_players
+        @hearts.load_deck
+        @hearts.deal_cards
+      end
+      
+      it "should leave all players with no cards" do
+        @hearts.return_cards
+        @hearts.players.each do |player|
+          player.hand.should be_empty
+          player.round_collection.should be_empty
+        end
+      end
+      
+      it "should leave all players with no cards after a hand" do
+        @hearts.play_hand
+        @hearts.return_cards
+        @hearts.players.each do |player|
+          player.hand.should be_empty
+          player.round_collection.should be_empty
+        end
+      end
+
+      it "should leave all players with no cards after 13 hands" do
+        13.times { @hearts.play_hand }
+        @hearts.return_cards
+        @hearts.players.each do |player|
+          player.hand.should be_empty
+          player.round_collection.should be_empty
+        end
+      end
+
+      it "should leave all players with no cards after a round" do
+        @hearts.play_round
+        @hearts.return_cards
+        @hearts.players.each do |player|
+          player.hand.should be_empty
+          player.round_collection.should be_empty
+        end
+      end
+      
+    end
+
     context "#13_hands" do
 
       before do
+        @hearts.load_players
         @hearts.deal_cards
         13.times { @hearts.play_hand }
       end
@@ -211,10 +282,50 @@ describe Hearts do
       end
 
     end
-    
+
+    context "#play_round" do
+      
+      before :each do
+        @hearts.load_players
+        @hearts.load_deck
+        @hearts.deal_cards
+        @hearts.play_round
+      end
+      
+      it "should play a round without error" do
+        @hearts.play_round
+      end
+      
+      it "should empty the players hands" do
+        @hearts.players.each do |player|
+          player.hand.should be_empty
+        end
+      end
+      
+      it "should have distributed 52 cards to players round_collections" do
+        collected_count = 0
+        @hearts.players.each do |player|
+          collected_count += player.round_collection.length
+        end
+        collected_count.should == 52
+      end
+        
+      
+      it "should have players' round scores totaling 26 (or 26*3)" do
+        @hearts.update_total_scores
+        all_round_scores = 0
+        @hearts.players.each do |player|
+          all_round_scores += player.round_score
+        end
+        all_round_scores.should == 26        
+      end
+        
+    end
+
     context "#scoring" do
       
       before :all do
+        @hearts.load_players
         @hearts.load_deck
       end
       
@@ -302,6 +413,11 @@ describe Hearts do
     end
 
     context "#whole_game" do
+      
+      before :each do
+        @hearts.reset
+      end
+      
       it "should 'play' a game of hearts and determine a winner" do
         @hearts.game_over?.should == false
         @hearts.play_game

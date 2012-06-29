@@ -47,21 +47,21 @@ class Hearts < CardGame
     load_players
     while(!game_over?)
       @rounds += 1
+      shuffle_cards
       play_round
+      update_total_scores
+      return_cards
+      if (rand < 0.3)
+        @winner = pick_highest_player
+      end
+      change_dealer
     end    
   end
   
   def play_round
-    change_dealer
-    shuffle_cards
     deal_cards
     13.times do
       play_hand
-    end
-    update_total_scores
-    return_cards
-    if (rand < 0.3)
-      @winner = pick_highest_player
     end
   end
   
@@ -82,24 +82,26 @@ class Hearts < CardGame
   end
   
   def deal_cards
-    13.times do
-      @players.each do |player|
-        top = @deck.last
-        player.hand << top
-        @deck.delete(top)
+    if @deck.length == 52
+      13.times do
+        @players.each do |player|
+          top = @deck.last
+          player.hand << top
+          @deck.delete(top)
+        end
       end
     end
   end
   
   def play_hand
-    dealt = []
+    played = []
     @players.each do |player|
       choice = player.hand.last
-      dealt << choice
+      played << choice
       player.hand.delete(choice)
     end
     recipient = pick_random_player
-    dealt.each do |card|
+    played.each do |card|
       recipient.round_collection << card
     end
   end
