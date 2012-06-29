@@ -1,5 +1,11 @@
-# require_relative "card.rb"    # for tests
-require "../card.rb" # run with game
+testing = true
+# testing = false
+
+if testing == true
+  require_relative "card.rb"    # for tests
+else
+  require "../card.rb" # run with game
+end
 
 class Deck
   

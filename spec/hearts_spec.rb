@@ -182,12 +182,12 @@ describe Hearts do
 
     end
 
-    context "#first_hand" do
+    context "#first_trick" do
 
       before :each do
         @hearts.load_players
         @hearts.deal_cards
-        @hearts.play_hand
+        @hearts.play_trick
       end
       
       after :each do
@@ -210,57 +210,12 @@ describe Hearts do
 
     end
 
-    context "#returning_cards" do
-      
-      before :each do
-        @hearts.load_players
-        @hearts.load_deck
-        @hearts.deal_cards
-      end
-      
-      it "should leave all players with no cards" do
-        @hearts.return_cards
-        @hearts.players.each do |player|
-          player.hand.should be_empty
-          player.round_collection.should be_empty
-        end
-      end
-      
-      it "should leave all players with no cards after a hand" do
-        @hearts.play_hand
-        @hearts.return_cards
-        @hearts.players.each do |player|
-          player.hand.should be_empty
-          player.round_collection.should be_empty
-        end
-      end
-
-      it "should leave all players with no cards after 13 hands" do
-        13.times { @hearts.play_hand }
-        @hearts.return_cards
-        @hearts.players.each do |player|
-          player.hand.should be_empty
-          player.round_collection.should be_empty
-        end
-      end
-
-      it "should leave all players with no cards after a round" do
-        @hearts.play_round
-        @hearts.return_cards
-        @hearts.players.each do |player|
-          player.hand.should be_empty
-          player.round_collection.should be_empty
-        end
-      end
-      
-    end
-
-    context "#13_hands" do
+    context "#13_trick" do
 
       before do
         @hearts.load_players
         @hearts.deal_cards
-        13.times { @hearts.play_hand }
+        13.times { @hearts.play_trick }
       end
       
       after :each do
@@ -282,6 +237,51 @@ describe Hearts do
       end
 
     end
+    
+    context "#returning_cards" do
+      
+      before :each do
+        @hearts.load_players
+        @hearts.load_deck
+        @hearts.deal_cards
+      end
+      
+      it "should leave all players with no cards" do
+        @hearts.return_cards
+        @hearts.players.each do |player|
+          player.hand.should be_empty
+          player.round_collection.should be_empty
+        end
+      end
+      
+      it "should leave all players with no cards after a hand" do
+        @hearts.play_trick
+        @hearts.return_cards
+        @hearts.players.each do |player|
+          player.hand.should be_empty
+          player.round_collection.should be_empty
+        end
+      end
+
+      it "should leave all players with no cards after 13 hands" do
+        13.times { @hearts.play_trick }
+        @hearts.return_cards
+        @hearts.players.each do |player|
+          player.hand.should be_empty
+          player.round_collection.should be_empty
+        end
+      end
+
+      it "should leave all players with no cards after a round" do
+        @hearts.play_round
+        @hearts.return_cards
+        @hearts.players.each do |player|
+          player.hand.should be_empty
+          player.round_collection.should be_empty
+        end
+      end
+      
+    end
 
     context "#play_round" do
       
@@ -293,6 +293,7 @@ describe Hearts do
       end
       
       it "should play a round without error" do
+        @hearts.return_cards
         @hearts.play_round
       end
       
@@ -426,6 +427,44 @@ describe Hearts do
       end
     end
   
+  end
+  
+  describe "#trick_play" do
+    
+    context "#lead_suit" do
+      
+      before :each do
+        @hearts.load_players
+        @hearts.load_deck
+        @hearts.shuffle_cards
+        @hearts.deal_cards
+      end
+      
+      it "should know the lead suit after first card is played" do
+        first_card = @hearts.players[0].hand.last
+        lead_suit = first_card.suit
+        @hearts.play_trick
+        @hearts.lead_suit.should == lead_suit
+      end
+
+      it "should limit other players to play the lead suit if they can" do
+        13.times do |i|
+          first_card = @hearts.players[0].hand.last
+          lead_suit = first_card.suit
+          @hearts.play_trick
+          @hearts.played[@hearts.played.length-4, 4].each do |card|
+            if card.suit != lead_suit
+              index = @hearts.played.index(card) - 4*i
+              @hearts.players[index].hand.each do |leftover|
+                leftover.suit.should_not == lead_suit
+              end
+            end
+          end
+        end
+      end
+    
+    end
+    
   end
 
   describe "#reset" do

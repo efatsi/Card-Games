@@ -1,9 +1,15 @@
-# require './card_game.rb'   # for testing
-require '../card_game.rb'  # for running
+testing = true
+# testing = false
+
+if testing == true
+  require './card_game.rb'   # for testing
+else
+  require '../card_game.rb'  # for running
+end
 
 class Hearts < CardGame
   
-  attr_accessor :dealer, :rounds
+  attr_accessor :dealer, :rounds, :played, :lead_suit
   
   def initialize
     @size = 4  
@@ -12,6 +18,8 @@ class Hearts < CardGame
     @deck = []
     @dealer = nil
     @rounds = 0
+    @played = []
+    @lead_suit = nil
   end
   
   def load_players
@@ -20,7 +28,7 @@ class Hearts < CardGame
       new_player = Player.new
       @players << new_player unless @players.include?(new_player)
     end
-    @dealer = @players[(rand*@size).floor]
+    @dealer = @players[rand(@size)]
   end
   
   def load_deck
@@ -61,7 +69,7 @@ class Hearts < CardGame
   def play_round
     deal_cards
     13.times do
-      play_hand
+      play_trick
     end
   end
   
@@ -93,16 +101,28 @@ class Hearts < CardGame
     end
   end
   
-  def play_hand
+  def play_trick
     played = []
     @players.each do |player|
-      choice = player.hand.last
+      if player == @players[0]
+        choice = player.hand.last
+        @lead_suit = choice.suit
+      else
+        choice = nil
+        player.hand.each do |card|
+          if card.suit == @lead_suit
+            choice = card
+          end
+        end
+        choice = player.hand.last if choice.nil?
+      end
       played << choice
       player.hand.delete(choice)
     end
     recipient = pick_random_player
     played.each do |card|
       recipient.round_collection << card
+      @played << card
     end
   end
   
@@ -148,16 +168,6 @@ class Hearts < CardGame
       player.round_collection = []
     end
     
-  end
-  
-  def played
-    played_cards = []
-    @players.each do |player|
-      player.round_collection.each do |card|
-        played_cards << card
-      end
-    end   
-    played_cards
   end
   
 end

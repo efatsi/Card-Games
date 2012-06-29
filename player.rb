@@ -5,7 +5,7 @@ class Player
   attr_accessor :name, :total_score, :round_score, :hand, :round_collection
   
   def initialize
-    @name = NAMES[(rand*NAMES.length).floor]
+    @name = NAMES[rand(NAMES.length)]
     @total_score = 0
     @round_score = 0
     @hand = []
