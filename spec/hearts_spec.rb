@@ -451,7 +451,7 @@ describe Hearts do
 
     end
 
-    pending "#lead_suit" do
+    context "#lead_suit" do
       
       before :each do
         @hearts.load_players
@@ -460,8 +460,12 @@ describe Hearts do
         @hearts.deal_cards
       end
       
+      after :each do
+        @hearts.return_cards
+      end
+      
       it "should know the lead suit after first card is played" do
-        first_card = @hearts.players[0].hand.last
+        first_card = @hearts.leader.hand.last
         lead_suit = first_card.suit
         @hearts.play_trick
         @hearts.lead_suit.should == lead_suit
@@ -469,7 +473,7 @@ describe Hearts do
 
       it "should limit other players to play the lead suit if they can" do
         13.times do |i|
-          first_card = @hearts.players[0].hand.last
+          first_card = @hearts.leader.hand.last
           lead_suit = first_card.suit
           @hearts.play_trick
           @hearts.played[@hearts.played.length-4, 4].each do |card|
@@ -522,6 +526,7 @@ describe Hearts do
       
       before :each do
         @hearts.load_players
+        @hearts.leader = @hearts.players[rand(4)]
       end
       
       it "should correctly determine the winner of a trick" do

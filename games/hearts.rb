@@ -76,7 +76,7 @@ class Hearts < CardGame
     deal_cards
     13.times do
       play_trick
-      determine_trick_winner(@played[@played.length-4, 4])
+      determine_trick_winner(last_trick)
     end
   end
   
@@ -106,6 +106,7 @@ class Hearts < CardGame
           top = @deck.last
           player.hand << top
           @deck.delete(top)
+          @leader = two_of_clubs_owner if @rounds = 0
         end
       end
     end
@@ -114,7 +115,6 @@ class Hearts < CardGame
   def play_trick
     trick = []
     leader_index = @players.index(@leader)
-    leader_index ||= 0
     4.times do |i|
       player = @players[(leader_index+i)%4]
       if player == @leader
@@ -142,7 +142,6 @@ class Hearts < CardGame
   def determine_trick_winner(trick)
     max = trick.first
     leader_index = @players.index(@leader)
-    leader_index ||= 0
     4.times do |i|
       card = trick[(leader_index+i)%4]
       max = card if card.beats?(max)
@@ -192,7 +191,22 @@ class Hearts < CardGame
       player.hand = []
       player.round_collection = []
     end
-    
+    @leader = nil
+    @rounds = 0
+  end
+  
+  def last_trick
+    @played[@played.length-4, 4]
+  end
+  
+  def two_of_clubs_owner
+    @players.each do |player|
+      player.hand.each do |card|
+        if card.suit == :club && card.value = "2"
+          return player
+        end
+      end
+    end
   end
   
 end
@@ -208,16 +222,13 @@ class Card
 
       case self.value
       when "A"
-        return false if ["A"].include?(card.value)
-        return true
+        ["K", "Q", "J"].include?(card.value)
       when "K"
-        return false if ["A", "K"].include?(card.value)
-        return true
+        ["Q", "J"].include?(card.value)
       when "Q"
-        return false if ["A", "K", "Q"].include?(card.value)
-        return true
+        ["J"].include?(card.value)
       else
-        return false
+        false
       end
       
     # if it isn't a face card
