@@ -131,6 +131,7 @@ describe Hearts do
       before :each do
         @hearts.load_players
         @hearts.load_deck
+        @hearts.shuffle_cards
         @hearts.deal_cards
       end
 
@@ -196,6 +197,7 @@ describe Hearts do
       before :each do
         @hearts.load_players
         @hearts.load_deck
+        @hearts.shuffle_cards
         @hearts.deal_cards
       end
       
@@ -241,6 +243,7 @@ describe Hearts do
       before :each do
         @hearts.load_players
         @hearts.load_deck
+        @hearts.shuffle_cards
         @hearts.deal_cards
         @hearts.play_round
       end
@@ -256,6 +259,10 @@ describe Hearts do
         end
       end
       
+      it "should leave an empty deck" do
+        @hearts.deck.should be_empty
+      end
+      
       it "should have distributed 52 cards to players round_collections" do
         collected_count = 0
         @hearts.players.each do |player|
@@ -264,6 +271,13 @@ describe Hearts do
         collected_count.should == 52
       end
         
+      it "should not have any nil values in round_collections" do
+        @hearts.players.each do |player|
+          player.round_collection.each do |card|
+            card.should_not be_nil
+          end
+        end
+      end
       
       it "should have players' round scores totaling 26 (or 26*3)" do
         @hearts.update_total_scores
@@ -378,6 +392,7 @@ describe Hearts do
         @hearts.game_over?.should == true
         @hearts.players.include?(@hearts.winner).should == true
       end
+      
     end
   
     context "#reset" do
@@ -395,10 +410,31 @@ describe Hearts do
   
   describe "#trick_play" do
     
+    context "#determine_leader" do
+      
+      before :each do
+        @hearts.load_players
+        @hearts.load_deck
+        @hearts.shuffle_cards
+        @hearts.deal_cards
+      end
+      
+      it "should assign 2 of clubs owner to be leader" do
+        has_2_of_clubs = false
+        @hearts.leader.hand.each do |card|
+          has_2_of_clubs = true if card.suit == :club && card.value = "2"
+        end
+        has_2_of_clubs.should == true
+      end
+        
+    end
+    
     context "#first_trick" do
 
       before :each do
         @hearts.load_players
+        @hearts.load_deck
+        @hearts.shuffle_cards
         @hearts.deal_cards
         @hearts.play_trick
       end
@@ -427,6 +463,8 @@ describe Hearts do
 
       before do
         @hearts.load_players
+        @hearts.load_deck
+        @hearts.shuffle_cards
         @hearts.deal_cards
         13.times { @hearts.play_trick }
       end
@@ -444,6 +482,7 @@ describe Hearts do
       it "should fill the round_collections" do
         total = 0
         @hearts.players.each do |player|
+          # raise player.round_collection.inpsect
           total += player.round_collection.length
         end
         total.should == 52
@@ -470,17 +509,20 @@ describe Hearts do
         @hearts.play_trick
         @hearts.lead_suit.should == lead_suit
       end
-
+      
       it "should limit other players to play the lead suit if they can" do
         13.times do |i|
           first_card = @hearts.leader.hand.last
+          leader_index = @hearts.players.index(@hearts.leader)
           lead_suit = first_card.suit
           @hearts.play_trick
-          @hearts.played[@hearts.played.length-4, 4].each do |card|
+          @hearts.last_trick.each do |card|
             if card.suit != lead_suit
               index = @hearts.played.index(card) - 4*i
-              @hearts.players[index].hand.each do |leftover|
-                leftover.suit.should_not == lead_suit
+              @hearts.players[(leader_index + index)%4].hand.each do |leftover|
+                if leftover.suit == lead_suit
+                  raise [@hearts.players[index].hand, "PLAYED=", @hearts.played, "LAST_TRICK=", @hearts.last_trick].inspect
+                end
               end
             end
           end

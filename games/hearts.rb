@@ -9,7 +9,7 @@ end
 
 class Hearts < CardGame
   
-  attr_accessor :dealer, :rounds, :played, :lead_suit, :leader 
+  attr_accessor :dealer, :rounds, :tricks_played, :played, :lead_suit, :leader 
   
   def initialize
     @size = 4  
@@ -18,6 +18,7 @@ class Hearts < CardGame
     @deck = []
     @dealer = nil
     @rounds = 0
+    @tricks_played = 0
     @played = []
     @lead_suit = nil
     @leader = nil
@@ -106,14 +107,13 @@ class Hearts < CardGame
           top = @deck.last
           player.hand << top
           @deck.delete(top)
-          @leader = two_of_clubs_owner if @rounds = 0
+          @leader = two_of_clubs_owner if @tricks_played = 0
         end
       end
     end
   end
   
   def play_trick
-    trick = []
     leader_index = @players.index(@leader)
     4.times do |i|
       player = @players[(leader_index+i)%4]
@@ -129,14 +129,11 @@ class Hearts < CardGame
         end
         choice = player.hand.last if choice.nil?
       end
-      trick << choice
+      @played << choice
       player.hand.delete(choice)
     end
-    recipient = pick_random_player
-    trick.each do |card|
-      recipient.round_collection << card
-      @played << card
-    end
+    recipient = determine_trick_winner(last_trick)
+    recipient.round_collection += last_trick
   end
   
   def determine_trick_winner(trick)
@@ -192,7 +189,7 @@ class Hearts < CardGame
       player.round_collection = []
     end
     @leader = nil
-    @rounds = 0
+    @tricks_played = 0
   end
   
   def last_trick
