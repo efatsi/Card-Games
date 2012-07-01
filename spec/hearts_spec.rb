@@ -429,6 +429,70 @@ describe Hearts do
         
     end
     
+    context "#passing_cards" do
+      
+      before :each do
+        @hearts.load_players
+        @hearts.load_deck
+        @hearts.shuffle_cards
+        @hearts.deal_cards
+      end
+      
+      it "should not raise an error" do
+        @hearts.pass_cards("left")
+        @hearts.pass_cards("right")
+        @hearts.pass_cards("across")
+        @hearts.pass_cards("none")
+      end
+      
+      it "should have had cards change hands" do
+        current_first_hand = @hearts.players[0].hand
+        @hearts.pass_cards("left")
+        new_cards = 0
+        @hearts.players[0].hand.each do |card|
+          new_cards += 1 unless current_first_hand.include?(card)
+        end
+        new_cards.should == 3
+      end
+
+      it "should have had cards change hands to the left if direction == left" do
+        current_first_hand = @hearts.players[0].hand
+        @hearts.pass_cards("left")
+        new_cards = 0
+        @hearts.players[1].hand.each do |card|
+          new_cards += 1 if current_first_hand.include?(card)
+        end
+        new_cards.should == 3
+      end
+
+      it "should have had cards change hands to the left if direction == right" do
+        current_first_hand = @hearts.players[0].hand
+        @hearts.pass_cards("right")
+        new_cards = 0
+        @hearts.players[3].hand.each do |card|
+          new_cards += 1 if current_first_hand.include?(card)
+        end
+        new_cards.should == 3
+      end
+
+      it "should have had cards change hands to the left if direction == across" do
+        current_first_hand = @hearts.players[0].hand
+        @hearts.pass_cards("across")
+        new_cards = 0
+        @hearts.players[2].hand.each do |card|
+          new_cards += 1 if current_first_hand.include?(card)
+        end
+        new_cards.should == 3
+      end
+
+      it "should have had no cards change hands if direction == none" do
+        current_first_hand = @hearts.players[0].hand
+        @hearts.pass_cards("none")
+        current_first_hand.should == @hearts.players[0].hand
+      end
+      
+    end
+    
     context "#first_trick" do
 
       before :each do
@@ -482,7 +546,6 @@ describe Hearts do
       it "should fill the round_collections" do
         total = 0
         @hearts.players.each do |player|
-          # raise player.round_collection.inpsect
           total += player.round_collection.length
         end
         total.should == 52
@@ -520,9 +583,7 @@ describe Hearts do
             if card.suit != lead_suit
               index = @hearts.played.index(card) - 4*i
               @hearts.players[(leader_index + index)%4].hand.each do |leftover|
-                if leftover.suit == lead_suit
-                  raise [@hearts.players[index].hand, "PLAYED=", @hearts.played, "LAST_TRICK=", @hearts.last_trick].inspect
-                end
+                leftover.suit.should_not == lead_suit
               end
             end
           end

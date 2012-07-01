@@ -17,7 +17,7 @@ class Hearts < CardGame
     @winner = nil
     @deck = []
     @dealer = nil
-    @rounds = 0
+    @rounds_played = 0
     @tricks_played = 0
     @played = []
     @lead_suit = nil
@@ -60,7 +60,7 @@ class Hearts < CardGame
     load_deck
     load_players
     while(!game_over?)
-      @rounds += 1
+      @rounds_played += 1
       shuffle_cards
       play_round
       update_total_scores
@@ -75,6 +75,7 @@ class Hearts < CardGame
   # deal cards, pay 13 tricks, 
   def play_round
     deal_cards
+    # pass_cards(pass_direction) def pass_direction; %w(left right across none)[@rounds_played % 4]; end;
     13.times do
       play_trick
       determine_trick_winner(last_trick)
@@ -203,6 +204,27 @@ class Hearts < CardGame
           return player
         end
       end
+    end
+  end
+
+  def pass_cards(direction)
+    return if direction == "none"
+    cards_to_pass = [ [] , [] , [] , [] ]
+    4.times do |i|
+      3.times do
+        cards_to_pass[i] << @players[i].hand[rand(@players[i].hand.length)]
+      end
+    end
+    take_from_shift = case direction
+    when "left"
+      3
+    when "across"
+      2
+    when "right"
+      1
+    end
+    4.times do |i|
+      @players[i].hand += cards_to_pass[(i + take_from_shift) % 4]
     end
   end
   
