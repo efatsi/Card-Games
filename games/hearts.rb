@@ -119,16 +119,13 @@ class Hearts < CardGame
     4.times do |i|
       player = @players[(leader_index+i)%4]
       if player == @leader
-        choice = player.hand.last
+        choice = pick_card(player)
         @lead_suit = choice.suit
       else
-        choice = nil
-        player.hand.each do |card|
-          if card.suit == @lead_suit
-            choice = card  
-          end
+        choice = pick_card(player)
+        while !choice.is_valid?(@lead_suit, player.hand)
+          choice = pick_card(player)
         end
-        choice = player.hand.last if choice.nil?
       end
       @played << choice
       player.hand.delete(choice)
@@ -228,13 +225,24 @@ class Hearts < CardGame
     end
   end
   
+  def pick_card(player)
+    player.hand[rand(player.hand.length)]
+    # choice = nil
+    # player.hand.each do |card|
+    #   if card.suit == @lead_suit
+    #     choice = card  
+    #   end
+    # end
+    # choice = player.hand.last if choice.nil?
+  end
+
 end
 
 class Card
-  
+
   def beats?(card)
     return false if self.suit != card.suit
-    
+
     # if it's a face card
     if self.value.to_i == 0
       return true if card.value.to_i != 0
@@ -255,7 +263,14 @@ class Card
       return false if card.value.to_i == 0
       self.value.to_i > card.value.to_i
     end
-    
+  end
+  
+  def is_valid?(lead_suit, hand)
+    return true if self.suit == lead_suit
+    hand.each do |card|
+      return false if card.suit == lead_suit
+    end
+    true
   end
   
 end

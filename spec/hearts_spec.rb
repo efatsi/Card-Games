@@ -567,23 +567,23 @@ describe Hearts do
       end
       
       it "should know the lead suit after first card is played" do
-        first_card = @hearts.leader.hand.last
-        lead_suit = first_card.suit
-        @hearts.play_trick
-        @hearts.lead_suit.should == lead_suit
+        @hearts.play_trick 
+        first_card = @hearts.last_trick.first
+        this_lead = first_card.suit
+        @hearts.lead_suit.should == this_lead
       end
       
       it "should limit other players to play the lead suit if they can" do
         13.times do |i|
-          first_card = @hearts.leader.hand.last
           leader_index = @hearts.players.index(@hearts.leader)
-          lead_suit = first_card.suit
           @hearts.play_trick
+          first_card = @hearts.last_trick.first
+          this_lead = first_card.suit
           @hearts.last_trick.each do |card|
-            if card.suit != lead_suit
+            if card.suit != this_lead
               index = @hearts.played.index(card) - 4*i
               @hearts.players[(leader_index + index)%4].hand.each do |leftover|
-                leftover.suit.should_not == lead_suit
+                leftover.suit.should_not == this_lead
               end
             end
           end
