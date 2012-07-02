@@ -4,9 +4,11 @@ testing = true
 if testing == true
   require_relative "deck.rb"    # for tests
   require_relative "player.rb"
+  require_relative "team.rb"
 else
   require "../deck.rb"    # for running with a game
   require "../player.rb"
+  require "../team.rb"
 end
 
 class CardGame
