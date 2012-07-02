@@ -44,16 +44,16 @@ class Hearts < CardGame
     @players[rand(@players.length)]
   end
   
-  def pick_highest_player
-    max = 0
-    highest = nil
+  def find_lowest_player
+    min = 101
+    winner = nil
     @players.each do |player|
-      if player.total_score >= max
-        highest = player
-        max = player.total_score
+      if player.total_score <= min
+        winner = player
+        min = player.total_score
       end
     end  
-    highest    
+    winner    
   end
   
   def play_game
@@ -65,10 +65,9 @@ class Hearts < CardGame
       play_round
       update_total_scores
       return_cards
-      if (rand < 0.3)
-        @winner = pick_highest_player
-      end
       change_dealer
+      check_for_winner
+      @winner = @players.first if @rounds_played == 100
     end    
   end
   
@@ -188,6 +187,17 @@ class Hearts < CardGame
     end
     @leader = nil
     @tricks_played = 0
+  end
+  
+  def check_for_winner
+    someone_lost = false
+    @players.each do |player|
+      someone_lost = true if player.total_score >= 100
+    end
+    if someone_lost
+      @winner = find_lowest_player
+    end
+      
   end
   
   def last_trick

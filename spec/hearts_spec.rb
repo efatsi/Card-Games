@@ -380,6 +380,28 @@ describe Hearts do
       
     end
 
+    context "#check_for_winner" do
+      
+      before :each do
+        @hearts.load_players
+      end
+      
+      it "should decide there is no winner" do
+        @hearts.players.each do |player|
+          player.total_score = 10
+        end
+        @hearts.check_for_winner
+        @hearts.winner.should be_nil
+      end
+      
+      it "should decide there is a winner when someone has over 100 points" do
+        @hearts.players.first.total_score = 101
+        @hearts.check_for_winner
+        @hearts.winner.should_not be_nil
+      end
+      
+    end
+
     context "#whole_game" do
       
       before :each do
