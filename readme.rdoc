@@ -1,1 +1,0 @@
-This is the README for Eli Fatsi's Card Game source code
