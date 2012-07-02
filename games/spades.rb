@@ -9,7 +9,7 @@ end
 
 class Spades < CardGame
   
-  attr_accessor :team_1, :team_2, :dealer, :rounds, :tricks_played, :played, :lead_suit, :leader 
+  attr_accessor :team_1, :team_2, :dealer, :rounds, :tricks_played, :played, :lead_suit, :leader, :rounds_played 
   
   def initialize
     @size = 4  
@@ -71,6 +71,7 @@ class Spades < CardGame
   # deal cards, pay 13 tricks, 
   def play_round
     deal_cards
+    make_bids
     13.times do
       play_trick
     end
@@ -108,6 +109,13 @@ class Spades < CardGame
     end
   end
   
+  def make_bids
+    teams.each { |team| team.bid = 3 + rand(4) }
+    if rand < 0.05
+      @players[rand(4)].going_nil = true
+    end
+  end
+  
   def play_trick
     leader_index = @players.index(@leader)
     4.times do |i|
@@ -124,10 +132,20 @@ class Spades < CardGame
       @played << choice
       player.hand.delete(choice)
     end
-    recipient = pick_random_player
+    recipient = determine_trick_winner(last_trick)
     recipient.round_collection += last_trick
     recipient.team.tricks_won += 1
   end  
+  
+  def determine_trick_winner(trick)
+    max = trick.first
+    leader_index = @players.index(@leader)
+    4.times do |i|
+      card = trick[(leader_index+i)%4]
+      max = card if card.beats?(max)
+    end
+    @leader = @players[trick.index(max)] 
+  end
   
   def update_round_scores
     teams.each do |team|
@@ -140,18 +158,22 @@ class Spades < CardGame
         team.round_score -= 10*team.bid
       end
     end
+    
+    @players.each do |player|
+      if player.going_nil
+        player.team.round_score += (player.round_collection.empty? ? 100 : -100)
+      end
+      if player.going_blind
+        player.team.round_score += (player.round_collection.empty? ? 200 : -200)
+      end
+    end
   end
   
   def update_total_scores
-  end
-  
-  def reset_scores
+    update_round_scores
     teams.each do |team|
-      team.total_score = 0
-      team.bid = 0
-      team.tricks_won = 0
+      team.total_score += team.round_score
       team.round_score = 0
-      team.total_score = 0
     end
   end
   
@@ -168,9 +190,17 @@ class Spades < CardGame
     end
     @leader = nil
     @tricks_played = 0
+    teams.each { |team| team.bid = 0 }
   end
   
   def check_for_winner      
+    winning_value = 0
+    teams.each do |team|
+      if team.total_score >= 500 && team.total_score > winning_value
+        @winner = team
+        winning_value = team.total_score
+      end
+    end
   end
   
   def last_trick
@@ -190,6 +220,16 @@ class Spades < CardGame
   
   def teams
     [@team_1, @team_2]
+  end
+  
+  def reset_scores
+    teams.each do |team|
+      team.total_score = 0
+      team.bid = 0
+      team.tricks_won = 0
+      team.round_score = 0
+      team.total_score = 0
+    end
   end
 
 end
