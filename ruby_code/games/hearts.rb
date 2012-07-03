@@ -9,7 +9,7 @@ end
 
 class Hearts < CardGame
 
-  attr_accessor :dealer, :rounds, :tricks_played, :played, :lead_suit, :leader 
+  attr_accessor :dealer, :rounds, :tricks_played, :played, :lead_suit, :leader, :hearts_broken
 
   def initialize
     @size = 4  
@@ -123,15 +123,14 @@ class Hearts < CardGame
         @lead_suit = choice.suit
       else
         choice = pick_card(player)
-        while !choice.is_valid?(@lead_suit, player.hand)
-          choice = pick_card(player)
-        end
       end
       @played << choice
       player.hand.delete(choice)
+      @hearts_broken = true if (choice.suit == :heart && !@hearts_broken)
     end
     recipient = determine_trick_winner(last_trick)
     recipient.round_collection += last_trick
+    @leader = recipient
   end
 
   def determine_trick_winner(trick)
@@ -141,7 +140,7 @@ class Hearts < CardGame
       card = trick[(leader_index+i)%4]
       max = card if card.beats?(max)
     end
-    @leader = @players[trick.index(max)] 
+    @players[trick.index(max)] 
   end
 
 
@@ -234,14 +233,15 @@ class Hearts < CardGame
   end
 
   def pick_card(player)
-    player.hand[rand(player.hand.length)]
-    # choice = nil
-    # player.hand.each do |card|
-    #   if card.suit == @lead_suit
-    #     choice = card  
-    #   end
-    # end
-    # choice = player.hand.last if choice.nil?
+    choice = player.hand[rand(player.hand.length)]
+    if player == @leader && !player.only_has?(:heart) && !@hearts_broken
+      player.hand.each do |card|
+        choice = card if card.suit != :heart
+      end
+    else  
+      choice = pick_card(player) until choice.is_valid?(@lead_suit, player.hand)
+    end
+    choice
   end
 
   def reset_total_scores

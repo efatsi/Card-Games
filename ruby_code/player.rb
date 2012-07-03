@@ -16,4 +16,11 @@ class Player
     @team = nil
   end
     
+  def only_has?(suit)
+    self.hand.each do |card|
+      return false if card.suit != suit
+    end
+    true
+  end
+  
 end

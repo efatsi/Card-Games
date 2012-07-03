@@ -610,6 +610,37 @@ describe Spades do
           end
         end
       end
+      
+      it "should make sure leader played the first card" do
+        13.times do |i|
+          leader_index = @spades.players.index(@spades.leader)
+          leader_hand = [] + @spades.leader.hand
+          @spades.play_trick
+          first_card = @spades.last_trick.first
+          leader_hand.include?(first_card).should == true
+        end
+      end
+
+      it "should not let leader play a heart if they haven't been broken, or they don't have a choice" do
+        lucky_guy = @spades.leader
+        lucky_guy.hand = []
+        lucky_guy.hand << Card.new(:club, "7")
+        lucky_guy.hand << Card.new(:spade, "9")
+        choice = @spades.pick_card(lucky_guy)
+        choice.suit.should == :club
+      end
+      
+      it "should not let leader play a heart if they haven't been broken, or they don't have a choice" do
+        13.times do |i|
+          leader_index = @spades.players.index(@spades.leader)
+          old_leader = @spades.leader
+          @spades.play_trick
+          first_card = @spades.last_trick.first
+          if first_card.suit == :spade 
+            old_leader.only_has?(:spade).should == true
+          end
+        end
+      end
 
     end
 
@@ -659,7 +690,7 @@ describe Spades do
         ["2", "3", "8", "5"].each do |value|
           fake_trick << Card.new(:club, value)
         end
-        @spades.determine_trick_winner(fake_trick)
+        @spades.leader = @spades.determine_trick_winner(fake_trick)
         @spades.leader.should == @spades.players[2]
       end
 
@@ -669,7 +700,7 @@ describe Spades do
         ["2", "3", "8", "A"].each do |value|
           fake_trick << Card.new(:club, value)
         end
-        @spades.determine_trick_winner(fake_trick)
+        @spades.leader = @spades.determine_trick_winner(fake_trick)
         @spades.leader.should == @spades.players.last
       end
 
@@ -679,7 +710,7 @@ describe Spades do
         ["A", "Q", "K", "J"].each do |value|
           fake_trick << Card.new(:club, value)
         end
-        @spades.determine_trick_winner(fake_trick)
+        @spades.leader = @spades.determine_trick_winner(fake_trick)
         @spades.leader.should == @spades.players.first
       end
 
@@ -690,7 +721,7 @@ describe Spades do
           fake_trick << Card.new(:club, value)
         end
         fake_trick.first.suit = :spade
-        @spades.determine_trick_winner(fake_trick)
+        @spades.leader = @spades.determine_trick_winner(fake_trick)
         @spades.leader.should == @spades.players.first
       end
     end

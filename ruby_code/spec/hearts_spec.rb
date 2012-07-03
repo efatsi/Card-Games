@@ -611,7 +611,38 @@ describe Hearts do
           end
         end
       end
-    
+      
+      it "should make sure leader played the first card" do
+        13.times do |i|
+          leader_index = @hearts.players.index(@hearts.leader)
+          leader_hand = [] + @hearts.leader.hand
+          @hearts.play_trick
+          first_card = @hearts.last_trick.first
+          leader_hand.include?(first_card).should == true
+        end
+      end
+      
+      it "should not let leader play a heart if they haven't been broken, or they don't have a choice" do
+        lucky_guy = @hearts.leader
+        lucky_guy.hand = []
+        lucky_guy.hand << Card.new(:club, "7")
+        lucky_guy.hand << Card.new(:heart, "9")
+        choice = @hearts.pick_card(lucky_guy)
+        choice.suit.should == :club
+      end
+      
+      it "should not let leader play a heart if they haven't been broken, or they don't have a choice" do
+        13.times do |i|
+          leader_index = @hearts.players.index(@hearts.leader)
+          old_leader = @hearts.leader
+          @hearts.play_trick
+          first_card = @hearts.last_trick.first
+          if first_card.suit == :heart 
+            old_leader.only_has?(:heart).should == true
+          end
+        end
+      end
+      
     end
     
     context "#card_beater" do
@@ -660,7 +691,7 @@ describe Hearts do
         ["2", "3", "4", "5"].each do |value|
           fake_trick << Card.new(:club, value)
         end
-        @hearts.determine_trick_winner(fake_trick)
+        @hearts.leader = @hearts.determine_trick_winner(fake_trick)
         @hearts.leader.should == @hearts.players.last
       end
       
@@ -670,7 +701,7 @@ describe Hearts do
         ["2", "3", "8", "5"].each do |value|
           fake_trick << Card.new(:club, value)
         end
-        @hearts.determine_trick_winner(fake_trick)
+        @hearts.leader = @hearts.determine_trick_winner(fake_trick)
         @hearts.leader.should == @hearts.players[2]
       end
       
@@ -680,7 +711,7 @@ describe Hearts do
         ["2", "3", "8", "A"].each do |value|
           fake_trick << Card.new(:club, value)
         end
-        @hearts.determine_trick_winner(fake_trick)
+        @hearts.leader = @hearts.determine_trick_winner(fake_trick)
         @hearts.leader.should == @hearts.players.last
       end
       
@@ -690,7 +721,7 @@ describe Hearts do
         ["J", "Q", "K", "A"].each do |value|
           fake_trick << Card.new(:club, value)
         end
-        @hearts.determine_trick_winner(fake_trick)
+        @hearts.leader = @hearts.determine_trick_winner(fake_trick)
         @hearts.leader.should == @hearts.players.last
       end
       
@@ -700,7 +731,7 @@ describe Hearts do
         ["A", "Q", "K", "J"].each do |value|
           fake_trick << Card.new(:club, value)
         end
-        @hearts.determine_trick_winner(fake_trick)
+        @hearts.leader = @hearts.determine_trick_winner(fake_trick)
         @hearts.leader.should == @hearts.players.first
       end
     end
